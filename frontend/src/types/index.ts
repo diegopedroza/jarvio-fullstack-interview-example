@@ -59,7 +59,7 @@ export interface WorkflowRun {
 export interface AuthState {
   user: User | null
   token: string | null
-  login: (email: string, name: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
 }

@@ -30,15 +30,13 @@ A comprehensive full-stack application demonstrating a workflow builder similar 
 - Docker and Docker Compose
 - Node.js 18+ (for local frontend development)
 
-### Setup (One Command)
-```bash
-./setup.sh
-```
+### Three Simple Commands
 
-### Run (One Command)
-```bash
-./run.sh
-```
+| Command | Purpose | Description |
+|---------|---------|-------------|
+| `./setup.sh` | **Setup** | Initialize database, install dependencies, build images |
+| `./run.sh` | **Run** | Start all services (frontend, backend, database) |
+| `./test.sh` | **Test** | Run comprehensive test suite with quality checks |
 
 The application will be available at:
 - **Frontend**: http://localhost:3000
@@ -47,7 +45,7 @@ The application will be available at:
 
 ### Demo Credentials
 - **Email**: `demo@example.com`
-- **Name**: `Demo User`
+- **Password**: `demo123`
 
 ## 🛠️ Features
 
@@ -121,25 +119,185 @@ docker-compose exec backend python seed_data.py
 
 ### Testing
 
-**Backend Tests**:
+#### **Running All Tests**
+
+**Quick Test Suite** (Recommended):
 ```bash
-cd backend
-pytest
+# Run comprehensive test suite with one command
+./test.sh
 ```
+
+**Manual Test Commands**:
+```bash
+# Run individual test suites
+docker-compose exec -T backend pytest -v          # Backend tests
+docker-compose exec -T frontend npm run build     # Frontend build test
+```
+
+**Individual Test Commands**:
+
+#### **Backend Tests**
+
+**Run Tests**:
+```bash
+# Via Docker (recommended)
+docker-compose exec -T backend pytest -v
+
+# Or locally (requires Python environment)
+cd backend
+pytest -v
+```
+
+**Test Structure**:
+- **Location**: `backend/tests/`
+- **Framework**: pytest with FastAPI TestClient
+- **Coverage**: API endpoints, authentication, basic functionality
+- **Database**: Uses in-memory testing (no external DB required)
+
+**Add New Tests**:
+```bash
+# Create new test file
+touch backend/tests/test_workflows.py
+
+# Example test structure:
+def test_workflow_creation():
+    response = client.post("/workflows/", json={
+        "name": "Test Workflow",
+        "description": "Test description",
+        "flow_data": {"nodes": [], "edges": []}
+    })
+    assert response.status_code == 200
+```
+
+#### **Frontend Tests**
+
+**Type Checking & Build Tests**:
+```bash
+# Via Docker
+docker-compose exec -T frontend npm run build
+
+# Via Docker - Type check only
+docker-compose exec -T frontend npx tsc --noEmit
+
+# Or locally
+cd frontend
+npm run build
+```
+
+**Linting**:
+```bash
+# Via Docker
+docker-compose exec -T frontend npm run lint
+
+# Or locally  
+cd frontend
+npm run lint
+```
+
+**Add Component Tests** (Future Enhancement):
+```bash
+# Install testing framework
+cd frontend
+npm install --save-dev @testing-library/react @testing-library/jest-dom vitest
+
+# Add to package.json scripts:
+# "test": "vitest"
+```
+
+#### **Backend Code Quality**
 
 **Linting and Formatting**:
 ```bash
+# Via Docker
+docker-compose exec -T backend black app/
+docker-compose exec -T backend isort app/ 
+docker-compose exec -T backend flake8 app/
+
+# Or locally
 cd backend
 black .
 isort .
 flake8 .
 ```
 
-**Pre-commit Hooks**:
+**Pre-commit Hooks** (Local Development):
 ```bash
 cd backend
 pre-commit install
 pre-commit run --all-files
+```
+
+#### **Integration Tests**
+
+**API Health Checks**:
+```bash
+# Test backend health
+curl http://localhost:8080/health
+
+# Test authentication
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "demo@example.com", "password": "demo123"}'
+
+# Test frontend is serving
+curl http://localhost:3000
+```
+
+**Database Tests**:
+```bash
+# Check database connection
+docker-compose exec -T backend python -c "
+from app.database import engine
+from sqlalchemy import text
+with engine.connect() as conn:
+    result = conn.execute(text('SELECT 1'))
+    print('Database connection: OK')
+"
+```
+
+#### **Creating New Tests**
+
+**Backend Test Guidelines**:
+1. **Location**: Add tests to `backend/tests/test_*.py`
+2. **Naming**: Use descriptive names like `test_workflow_crud_operations`
+3. **Structure**: Use FastAPI TestClient for API testing
+4. **Database**: Tests use in-memory SQLite (no cleanup needed)
+
+**Example Backend Test**:
+```python
+def test_create_workflow():
+    response = client.post("/workflows/", json={
+        "name": "Test Workflow", 
+        "description": "Test",
+        "flow_data": {"nodes": [], "edges": []}
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Test Workflow"
+```
+
+**Frontend Test Guidelines** (Future):
+1. **Framework**: Vitest + Testing Library recommended
+2. **Location**: Add tests to `frontend/src/**/*.test.tsx`
+3. **Focus**: Component rendering, user interactions, API integration
+
+#### **Continuous Integration**
+
+**Test Pipeline Commands**:
+```bash
+# Complete test suite for CI/CD
+./setup.sh                                    # Setup application
+docker-compose exec -T backend pytest -v     # Backend tests
+docker-compose exec -T frontend npm run build # Frontend build test
+docker-compose exec -T backend flake8 app/   # Linting
+docker-compose down                           # Cleanup
+```
+
+**Test Environment Variables**:
+```bash
+# Add to .env for testing
+DATABASE_URL=sqlite:///./test.db
+JWT_SECRET=test-secret-key
 ```
 
 ## 📁 Project Structure

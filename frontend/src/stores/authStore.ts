@@ -5,14 +5,14 @@ import type { User, AuthState } from '@/types'
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       token: null,
       isAuthenticated: false,
 
-      login: async (email: string, name: string) => {
+      login: async (email: string, password: string) => {
         try {
-          const response = await api.post('/auth/login', { email, name })
+          const response = await api.post('/auth/login', { email, password })
           const { access_token } = response.data
           
           localStorage.setItem('auth-token', access_token)

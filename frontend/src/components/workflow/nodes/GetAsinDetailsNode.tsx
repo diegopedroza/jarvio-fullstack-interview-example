@@ -7,7 +7,6 @@ interface GetAsinDetailsNodeData {
 }
 
 export const GetAsinDetailsNode: React.FC<NodeProps<GetAsinDetailsNodeData>> = ({
-  data,
   isConnectable,
 }) => {
   return (

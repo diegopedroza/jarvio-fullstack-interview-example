@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -27,11 +27,11 @@ export const LoginForm: React.FC = () => {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      await login(data.email, data.name)
+      await login(data.email, data.password)
       navigate('/dashboard')
     } catch (error) {
       setError('root', {
-        message: 'Login failed. Please try again.',
+        message: 'Login failed. Please check your credentials.',
       })
     }
   }
@@ -44,7 +44,7 @@ export const LoginForm: React.FC = () => {
             Sign in to Workflow Builder
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email and name to get started
+            Enter your email and password to get started
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -65,17 +65,17 @@ export const LoginForm: React.FC = () => {
             </div>
             
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
               </label>
               <input
-                {...register('name')}
-                type="text"
+                {...register('password')}
+                type="password"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your name"
+                placeholder="Enter your password"
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
           </div>

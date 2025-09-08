@@ -98,4 +98,4 @@ class TokenData(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    name: str
+    password: str
