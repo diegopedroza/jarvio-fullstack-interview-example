@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Workflow } from 'lucide-react'
+import { Plus, Workflow, Package } from 'lucide-react'
 import { useWorkflows } from '@/hooks/useWorkflows'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -28,6 +28,13 @@ export const DashboardPage: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
+              <Link
+                to="/my-products"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+              >
+                <Package className="h-4 w-4 mr-1" />
+                My Products
+              </Link>
               <span className="text-sm text-gray-700">Welcome, {user?.name}</span>
               <button
                 onClick={logout}
