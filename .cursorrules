@@ -1,0 +1,311 @@
+# Workflow Builder Application - Cursor Rules
+
+## Repository Overview
+This is a full-stack React Flow workflow builder application with Docker containerization, featuring:
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS + React Flow + React Query
+- **Backend**: FastAPI + SQLAlchemy + PostgreSQL + Alembic
+- **Infrastructure**: Docker Compose with PostgreSQL, backend, and frontend services
+
+## Core Architecture
+
+### Backend Structure (`/backend`)
+- **FastAPI** application with JWT authentication
+- **PostgreSQL** database with SQLAlchemy ORM
+- **Models**: User, MyProduct, Workflow, WorkflowRun (`app/models.py`)
+- **API Routes**: `/auth`, `/workflows`, `/products` (`app/routers/`)
+- **Schemas**: Pydantic models for request/response validation (`app/schemas.py`)
+- **Database**: Alembic migrations, session management (`app/database.py`)
+- **Workflow Engine**: Sequential node execution (`app/workflow_engine.py`)
+
+### Frontend Structure (`/frontend`)
+- **React 18** with TypeScript and Vite
+- **React Flow** for visual workflow editing
+- **React Query** (@tanstack/react-query) for API state management
+- **Zustand** for auth state management
+- **Tailwind CSS** for styling
+- **Pages**: Login, Dashboard, WorkflowEditor, MyProducts (`src/pages/`)
+- **Components**: Workflow nodes, protected routes (`src/components/`)
+- **Hooks**: Custom hooks for API calls (`src/hooks/`)
+
+## Development Workflow
+
+### Setup & Running
+```bash
+# Initial setup (creates containers, runs migrations, seeds data)
+./setup.sh
+
+# Start application stack
+./run.sh
+
+# Stop application
+docker-compose down
+
+# Nuclear reset (when schemas change or major issues)
+docker-compose down -v  # Destroys volumes
+./setup.sh
+./run.sh
+```
+
+### Database Management
+- **Schema Changes**: Always run nuclear reset (`docker-compose down -v`) when database schemas change
+- **Seeding**: `backend/seed_data.py` creates demo user and sample data
+- **Models**: Located in `backend/app/models.py`
+- **Migrations**: Alembic handles migrations, but nuclear reset is more reliable for dev
+
+### Frontend Development
+```bash
+cd frontend
+npm install          # Install dependencies
+npm run dev          # Development server
+npm run build        # Production build
+npm run lint         # ESLint (if configured)
+npm run typecheck    # TypeScript checking
+```
+
+## Code Patterns & Conventions
+
+### Backend Patterns
+1. **API Routes**: Use FastAPI router pattern with dependency injection
+   ```python
+   @router.get("/", response_model=List[schemas.MyProduct])
+   def get_products(
+       current_user: models.User = Depends(auth.get_current_user),
+       db: Session = Depends(get_db)
+   ):
+   ```
+
+2. **Models**: SQLAlchemy declarative models with relationships
+   ```python
+   class MyProduct(Base):
+       __tablename__ = "my_products"
+       asin = Column(String, primary_key=True)
+       # ...
+   ```
+
+3. **Authentication**: JWT-based with dependency injection for protected routes
+
+### Frontend Patterns
+1. **API Hooks**: React Query pattern for data fetching
+   ```typescript
+   export const useProducts = () => {
+     return useQuery({
+       queryKey: ['products'],
+       queryFn: async () => {
+         const response = await api.get('/products/')
+         return response.data as MyProduct[]
+       },
+     })
+   }
+   ```
+
+2. **Page Components**: Consistent layout with navigation
+   ```typescript
+   export const MyPage: React.FC = () => {
+     const { data, isLoading, error } = useMyData()
+     // Loading, error, and success states
+   }
+   ```
+
+3. **React Flow Nodes**: Custom node components with parameter synchronization
+   ```typescript
+   // CRITICAL: Always sync local state changes back to ReactFlow
+   const handleParameterChange = useCallback((newValue: any) => {
+     setLocalState(newValue)
+     setNodes((nodes) =>
+       nodes.map((node) =>
+         node.id === id
+           ? { ...node, data: { ...node.data, parameter: newValue } }
+           : node
+       )
+     )
+   }, [id, setNodes])
+   
+   // Sync external data changes to local state
+   useEffect(() => {
+     setLocalState(data.parameter || defaultValue)
+   }, [data.parameter])
+   ```
+
+## Workflow System
+
+### Node Types & Data Flow
+1. **get_bestselling_asins**: Returns array of ASINs sorted by sales
+   - Parameter: `topCount` (default: 10)
+   - Output: `["B08N5WRWNW", "B085HV4BZ6", "B07H8XQZPX"]`
+
+2. **get_asin_by_index**: Selects single ASIN from input array
+   - Parameter: `index` (default: 0)
+   - Input: Array of ASINs
+   - Output: Single ASIN string
+
+3. **get_asin_details**: Returns full product details for ASIN
+   - Input: Single ASIN string
+   - Output: Complete product object with title, description, bullet_points
+
+### Sequential Workflow Pattern
+```json
+{
+  "nodes": [
+    {"id": "get-top-asins", "type": "get_bestselling_asins", "data": {"topCount": 3}},
+    {"id": "select-index", "type": "get_asin_by_index", "data": {"index": 1}},
+    {"id": "get-details", "type": "get_asin_details", "data": {}}
+  ],
+  "edges": [
+    {"source": "get-top-asins", "target": "select-index"},
+    {"source": "select-index", "target": "get-details"}
+  ]
+}
+```
+
+## Critical Implementation Details
+
+### React Flow Node State Management
+**MOST IMPORTANT**: React Flow nodes must sync parameter changes back to the global ReactFlow state, otherwise saved workflows use stale data.
+
+```typescript
+// ✅ CORRECT: Updates both local state and ReactFlow state
+const handleParameterChange = useCallback((newValue) => {
+  setLocalState(newValue)
+  setNodes((nodes) =>
+    nodes.map((node) =>
+      node.id === id
+        ? { ...node, data: { ...node.data, parameter: newValue } }
+        : node
+    )
+  )
+}, [id, setNodes])
+
+// ❌ WRONG: Only updates local state
+const handleParameterChange = (newValue) => {
+  setLocalState(newValue) // This won't be saved!
+}
+```
+
+### Database Seeding Data
+Sample products in `backend/seed_data.py`:
+- B08N5WRWNW: Echo Dot ($15,000.50)
+- B085HV4BZ6: Fire TV Stick 4K ($12,500.75)
+- B07H8XQZPX: Kindle Paperwhite ($8,900.25)
+- B07XJ8C8F7: Ring Video Doorbell ($6,750.80)
+- B01E6AO69U: Amazon Basics HDMI Cable ($3,200.40)
+
+### Authentication
+- **Demo User**: `demo@example.com` / `demo123`
+- **JWT Token**: Stored in localStorage as 'auth-token'
+- **User Data**: Stored in localStorage as 'user'
+- **Protected Routes**: Wrap with `<ProtectedRoute>` component
+
+## Common Issues & Solutions
+
+### 1. Parameter Changes Not Saving
+**Problem**: Users modify node parameters but old values are used in execution
+**Solution**: Ensure node components use `setNodes` callback to update ReactFlow state
+
+### 2. Database/Schema Changes
+**Problem**: Alembic migrations fail or schema is out of sync
+**Solution**: Nuclear reset - `docker-compose down -v && ./setup.sh`
+
+### 3. Seed Data Missing
+**Problem**: Database is empty after setup
+**Solution**: Check that backend service is ready before seeding runs (setup.sh handles this)
+
+### 4. Docker Issues
+**Problem**: Services won't start or have connection issues
+**Solution**: 
+- Ensure Docker is running
+- Check port conflicts (3000, 8080, 5432)
+- Use `docker-compose down -v` for complete reset
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/login` - Login with email/password
+- `GET /auth/me` - Get current user info
+
+### Workflows
+- `GET /workflows/` - List user's workflows
+- `POST /workflows/` - Create new workflow
+- `GET /workflows/{id}` - Get specific workflow
+- `PUT /workflows/{id}` - Update workflow
+- `POST /workflows/{id}/run` - Execute workflow
+- `GET /workflows/{id}/runs` - Get workflow run history
+
+### Products
+- `GET /products/` - List all products
+- `GET /products/{asin}` - Get product by ASIN
+- `GET /products/bestselling/{count}` - Get top selling products
+
+## File Locations
+
+### Key Backend Files
+- `app/main.py` - FastAPI application entry point
+- `app/models.py` - Database models
+- `app/schemas.py` - Pydantic schemas
+- `app/routers/` - API route handlers
+- `app/workflow_engine.py` - Workflow execution logic
+- `seed_data.py` - Database seeding script
+
+### Key Frontend Files
+- `src/App.tsx` - Main app with routing
+- `src/pages/` - Page components
+- `src/components/workflow/nodes/` - ReactFlow node components
+- `src/hooks/` - API hooks with React Query
+- `src/types/index.ts` - TypeScript type definitions
+- `src/utils/api.ts` - Axios API client
+
+### Docker & Setup
+- `docker-compose.yml` - Service definitions
+- `setup.sh` - Initial setup script
+- `run.sh` - Application startup script
+- `backend/Dockerfile` - Backend container
+- `frontend/Dockerfile` - Frontend container
+
+## Development Guidelines
+
+### Code Style
+- **No comments** unless explicitly requested
+- **TypeScript strict mode** - always type everything
+- **Consistent error handling** - loading, error, and success states
+- **Responsive design** - mobile-friendly components
+- **Accessibility** - proper ARIA labels and semantic HTML
+
+### Testing
+- **Integration tests** for workflow execution
+- **Frontend builds** must pass before deployment
+- **API testing** through FastAPI's automatic docs at `/docs`
+
+### Git Workflow
+- **Never commit** unless user explicitly requests it
+- **Small, focused commits** when committing is requested
+- **Descriptive commit messages** following conventional commits
+
+## Environment & URLs
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **API Docs**: http://localhost:8080/docs
+- **PostgreSQL**: localhost:5432
+
+## Technologies & Dependencies
+
+### Backend
+- FastAPI
+- SQLAlchemy
+- Alembic
+- PostgreSQL
+- Pydantic
+- python-multipart
+- python-jose (JWT)
+
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Flow
+- React Query (@tanstack/react-query)
+- React Router Dom
+- Zustand
+- Axios
+- Lucide React (icons)
+
+Remember: This is a workflow builder application where users create visual workflows using React Flow, and the backend executes these workflows sequentially through connected nodes. The most critical aspect is maintaining proper state synchronization between React Flow components and the global workflow state.
