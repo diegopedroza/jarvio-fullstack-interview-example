@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow'
 import { ShoppingCart, X } from 'lucide-react'
 
@@ -13,11 +13,34 @@ export const GetBestSellingAsinsNode: React.FC<NodeProps<GetBestSellingAsinsNode
   isConnectable,
 }) => {
   const [topCount, setTopCount] = useState(data.topCount || 10)
-  const { deleteElements } = useReactFlow()
+  const { deleteElements, setNodes } = useReactFlow()
 
   const onDelete = () => {
     deleteElements({ nodes: [{ id }] })
   }
+
+  // Sync local state when data prop changes
+  useEffect(() => {
+    setTopCount(data.topCount || 10)
+  }, [data.topCount])
+
+  const handleTopCountChange = useCallback((newTopCount: number) => {
+    setTopCount(newTopCount)
+    // Update the node data in ReactFlow
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                topCount: newTopCount,
+              },
+            }
+          : node
+      )
+    )
+  }, [id, setNodes])
 
   return (
     <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-blue-500 relative">
@@ -46,7 +69,7 @@ export const GetBestSellingAsinsNode: React.FC<NodeProps<GetBestSellingAsinsNode
         <input
           type="number"
           value={topCount}
-          onChange={(e) => setTopCount(Number(e.target.value))}
+          onChange={(e) => handleTopCountChange(Number(e.target.value))}
           className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
           min="1"
           max="100"

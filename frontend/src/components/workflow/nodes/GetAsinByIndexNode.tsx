@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Handle, Position, NodeProps, useReactFlow, useNodes, useEdges } from 'reactflow'
 import { ListOrdered, X } from 'lucide-react'
 import { getNodeDataFlow } from '@/utils/workflowUtils'
@@ -14,7 +14,7 @@ export const GetAsinByIndexNode: React.FC<NodeProps<GetAsinByIndexNodeData>> = (
   isConnectable,
 }) => {
   const [index, setIndex] = useState(data.index || 0)
-  const { deleteElements } = useReactFlow()
+  const { deleteElements, setNodes } = useReactFlow()
   const nodes = useNodes()
   const edges = useEdges()
   
@@ -23,6 +23,29 @@ export const GetAsinByIndexNode: React.FC<NodeProps<GetAsinByIndexNodeData>> = (
   const onDelete = () => {
     deleteElements({ nodes: [{ id }] })
   }
+
+  // Sync local state when data prop changes
+  useEffect(() => {
+    setIndex(data.index || 0)
+  }, [data.index])
+
+  const handleIndexChange = useCallback((newIndex: number) => {
+    setIndex(newIndex)
+    // Update the node data in ReactFlow
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                index: newIndex,
+              },
+            }
+          : node
+      )
+    )
+  }, [id, setNodes])
 
   return (
     <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-green-500 relative">
@@ -51,7 +74,7 @@ export const GetAsinByIndexNode: React.FC<NodeProps<GetAsinByIndexNodeData>> = (
         <input
           type="number"
           value={index}
-          onChange={(e) => setIndex(Number(e.target.value))}
+          onChange={(e) => handleIndexChange(Number(e.target.value))}
           className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
           min="0"
         />
