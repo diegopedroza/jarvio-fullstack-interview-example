@@ -7,14 +7,18 @@ def create_seed_data():
     db = SessionLocal()
     
     try:
-        # Create sample user
-        user = models.User(
-            email="demo@example.com",
-            name="Demo User"
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        # Get or create sample user
+        user = db.query(models.User).filter(models.User.email == "demo@example.com").first()
+        if not user:
+            user = models.User(
+                email="demo@example.com",
+                name="Demo User"
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            print("User already exists, using existing user")
         
         # Create sample products
         sample_products = [
@@ -75,29 +79,34 @@ def create_seed_data():
             }
         ]
         
-        for product_data in sample_products:
-            product = models.MyProduct(**product_data)
-            db.add(product)
+        # Check if products already exist
+        existing_product_count = db.query(models.MyProduct).count()
+        if existing_product_count == 0:
+            for product_data in sample_products:
+                product = models.MyProduct(**product_data)
+                db.add(product)
+            db.commit()
+            print(f"Added {len(sample_products)} sample products")
+        else:
+            print(f"Products already exist ({existing_product_count} products found)")
         
-        db.commit()
-        
-        # Create sample workflow
+        # Create sample workflow - Sequential Example: Get Best Selling ASINs -> Get Index 1 -> Get Details
         sample_workflow = {
-            "name": "Get Top Product Details",
-            "description": "Gets the best selling product and shows its details",
+            "name": "Sequential Product Analysis Workflow",
+            "description": "Example sequential workflow: Gets best selling ASINs, selects second item (index 1), then gets detailed product information",
             "flow_data": {
                 "nodes": [
                     {
                         "id": "get-top-asins",
                         "type": "get_bestselling_asins",
                         "position": {"x": 100, "y": 100},
-                        "data": {"topCount": 5, "label": "Get Top 5 ASINs"}
+                        "data": {"topCount": 3, "label": "Get Best Selling ASINs"}
                     },
                     {
-                        "id": "select-first",
+                        "id": "select-index",
                         "type": "get_asin_by_index",
                         "position": {"x": 400, "y": 100},
-                        "data": {"index": 0, "label": "Get First ASIN"}
+                        "data": {"index": 1, "label": "Get ASIN by Index"}
                     },
                     {
                         "id": "get-details",
@@ -110,26 +119,45 @@ def create_seed_data():
                     {
                         "id": "edge-1",
                         "source": "get-top-asins",
-                        "target": "select-first",
-                        "type": "smoothstep"
+                        "target": "select-index",
+                        "sourceHandle": "output",
+                        "targetHandle": "input",
+                        "type": "default",
+                        "animated": True,
+                        "style": {"stroke": "#3b82f6", "strokeWidth": 2}
                     },
                     {
                         "id": "edge-2",
-                        "source": "select-first",
+                        "source": "select-index",
                         "target": "get-details",
-                        "type": "smoothstep"
+                        "sourceHandle": "output", 
+                        "targetHandle": "input",
+                        "type": "default",
+                        "animated": True,
+                        "style": {"stroke": "#3b82f6", "strokeWidth": 2}
                     }
                 ]
             },
             "user_id": user.id
         }
         
-        workflow = models.Workflow(**sample_workflow)
-        db.add(workflow)
-        db.commit()
-        db.refresh(workflow)
+        # Check if workflow already exists
+        existing_workflow = db.query(models.Workflow).filter(
+            models.Workflow.name == "Sequential Product Analysis Workflow",
+            models.Workflow.user_id == user.id
+        ).first()
         
-        # Create sample workflow run
+        if not existing_workflow:
+            workflow = models.Workflow(**sample_workflow)
+            db.add(workflow)
+            db.commit()
+            db.refresh(workflow)
+            print("Added sample workflow")
+        else:
+            workflow = existing_workflow
+            print("Sample workflow already exists")
+        
+        # Create sample workflow run - matches the sequential workflow pattern
         sample_run = models.WorkflowRun(
             workflow_id=workflow.id,
             user_id=user.id,
@@ -137,23 +165,23 @@ def create_seed_data():
             results={
                 "get-top-asins": {
                     "type": "asin_list",
-                    "value": ["B08N5WRWNW", "B085HV4BZ6", "B07H8XQZPX", "B07XJ8C8F7", "B01E6AO69U"],
-                    "count": 5
+                    "value": ["B08N5WRWNW", "B085HV4BZ6", "B07H8XQZPX"],  # Top 3 products
+                    "count": 3
                 },
-                "select-first": {
+                "select-index": {
                     "type": "single_asin",
-                    "value": "B08N5WRWNW"
+                    "value": "B085HV4BZ6"  # Index 1 (second item)
                 },
                 "get-details": {
                     "type": "product_details",
                     "value": {
-                        "asin": "B08N5WRWNW",
-                        "title": "Echo Dot (4th Gen) | Smart speaker with Alexa | Charcoal",
-                        "description": "Our most popular smart speaker with a fabric design. It is our most compact smart speaker that fits perfectly into small spaces.",
+                        "asin": "B085HV4BZ6",
+                        "title": "Fire TV Stick 4K | Streaming Media Player",
+                        "description": "The most powerful streaming media stick with 4K Ultra HD and Alexa Voice Remote.",
                         "bullet_points": [
-                            "Crisp vocals and balanced bass",
-                            "Voice control your music",
-                            "Ready to help"
+                            "4K Ultra HD streaming",
+                            "Alexa Voice Remote included",
+                            "Thousands of channels, apps, and Alexa skills"
                         ]
                     }
                 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Handle, Position, NodeProps } from 'reactflow'
-import { ShoppingCart } from 'lucide-react'
+import { Handle, Position, NodeProps, useReactFlow } from 'reactflow'
+import { ShoppingCart, X } from 'lucide-react'
 
 interface GetBestSellingAsinsNodeData {
   label: string
@@ -8,13 +8,27 @@ interface GetBestSellingAsinsNodeData {
 }
 
 export const GetBestSellingAsinsNode: React.FC<NodeProps<GetBestSellingAsinsNodeData>> = ({
+  id,
   data,
   isConnectable,
 }) => {
   const [topCount, setTopCount] = useState(data.topCount || 10)
+  const { deleteElements } = useReactFlow()
+
+  const onDelete = () => {
+    deleteElements({ nodes: [{ id }] })
+  }
 
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-blue-500">
+    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-blue-500 relative">
+      <button
+        onClick={onDelete}
+        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+        title="Delete node"
+      >
+        <X className="w-3 h-3" />
+      </button>
+      
       <div className="flex items-center">
         <div className="rounded-full w-12 h-12 flex justify-center items-center bg-blue-100">
           <ShoppingCart className="w-6 h-6 text-blue-600" />
@@ -37,6 +51,17 @@ export const GetBestSellingAsinsNode: React.FC<NodeProps<GetBestSellingAsinsNode
           min="1"
           max="100"
         />
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="text-xs text-gray-600">
+          <div className="mb-1">
+            <span className="font-medium">Output:</span> List of ASINs
+          </div>
+          <div className="text-gray-500">
+            Returns top {topCount} best selling product ASINs
+          </div>
+        </div>
       </div>
 
       <Handle

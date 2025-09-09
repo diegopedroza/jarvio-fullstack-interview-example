@@ -186,6 +186,16 @@ export const WorkflowEditorPage: React.FC = () => {
                 Get ASIN Details
               </button>
             </div>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="text-xs text-gray-500 space-y-1">
+                <div>
+                  🔗 <strong>Sequential Flow:</strong> Best Selling ASINs → Get by Index → ASIN Details
+                </div>
+                <div>
+                  💡 <strong>Tips:</strong> Connect nodes to pass data between them. Delete with red X or Delete key.
+                </div>
+              </div>
+            </div>
           </div>
           
           <WorkflowCanvas

@@ -2,7 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "*",
       "Bash(./setup.sh:*)",
       "Bash(docker-compose build:*)",
       "Bash(./run.sh)",
@@ -11,7 +10,8 @@
       "Bash(docker-compose restart:*)",
       "Bash(curl:*)",
       "Bash(chmod:*)",
-      "Bash(./test.sh)"
+      "Bash(./test.sh)",
+      "Bash(docker-compose down:*)"
     ],
     "deny": [],
     "ask": []
