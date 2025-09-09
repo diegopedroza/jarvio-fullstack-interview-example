@@ -11,7 +11,10 @@
       "Bash(curl:*)",
       "Bash(chmod:*)",
       "Bash(./test.sh)",
-      "Bash(docker-compose down:*)"
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker exec:*)"
     ],
     "deny": [],
     "ask": []
