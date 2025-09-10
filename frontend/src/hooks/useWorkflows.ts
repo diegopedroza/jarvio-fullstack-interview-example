@@ -19,7 +19,7 @@ export const useWorkflow = (workflowId: string) => {
       const response = await api.get(`/workflows/${workflowId}`)
       return response.data as Workflow
     },
-    enabled: !!workflowId,
+    enabled: !!workflowId && workflowId !== 'new',
   })
 }
 
@@ -79,6 +79,6 @@ export const useWorkflowRuns = (workflowId: string) => {
       const response = await api.get(`/workflows/${workflowId}/runs`)
       return response.data as WorkflowRun[]
     },
-    enabled: !!workflowId,
+    enabled: !!workflowId && workflowId !== 'new',
   })
 }

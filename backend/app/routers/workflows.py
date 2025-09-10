@@ -1,5 +1,6 @@
 from typing import List
 from datetime import datetime
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -36,7 +37,7 @@ def create_workflow(
 
 @router.get("/{workflow_id}", response_model=schemas.Workflow)
 def get_workflow(
-    workflow_id: str,
+    workflow_id: uuid.UUID,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -54,7 +55,7 @@ def get_workflow(
 
 @router.put("/{workflow_id}", response_model=schemas.Workflow)
 def update_workflow(
-    workflow_id: str,
+    workflow_id: uuid.UUID,
     workflow_update: schemas.WorkflowUpdate,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
@@ -80,7 +81,7 @@ def update_workflow(
 
 @router.delete("/{workflow_id}")
 def delete_workflow(
-    workflow_id: str,
+    workflow_id: uuid.UUID,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -100,7 +101,7 @@ def delete_workflow(
 
 @router.post("/{workflow_id}/run", response_model=schemas.WorkflowRun)
 def run_workflow(
-    workflow_id: str,
+    workflow_id: uuid.UUID,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -145,7 +146,7 @@ def run_workflow(
 
 @router.get("/{workflow_id}/runs", response_model=List[schemas.WorkflowRun])
 def get_workflow_runs(
-    workflow_id: str,
+    workflow_id: uuid.UUID,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):

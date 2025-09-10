@@ -1,7 +1,7 @@
 import React from 'react'
-import { Handle, Position, NodeProps, useReactFlow, useNodes, useEdges } from 'reactflow'
-import { FileText, X } from 'lucide-react'
-import { getNodeDataFlow } from '@/utils/workflowUtils'
+import {Handle, NodeProps, Position, useEdges, useNodes, useReactFlow} from 'reactflow'
+import {FileText, X} from 'lucide-react'
+import {getNodeDataFlow} from '@/utils/workflowUtils'
 
 interface GetAsinDetailsNodeData {
   label: string
@@ -49,7 +49,7 @@ export const GetAsinDetailsNode: React.FC<NodeProps<GetAsinDetailsNodeData>> = (
             </div>
           ) : (
             <div className="text-orange-600">
-              <span className="font-medium">⚠️ Input:</span> Connect from "Get ASIN by Index"
+              <span className="font-medium">⚠️ Input:</span> Connect from "Get by Index" or "Loop"
             </div>
           )}
           <div>
@@ -65,6 +65,13 @@ export const GetAsinDetailsNode: React.FC<NodeProps<GetAsinDetailsNodeData>> = (
         isConnectable={isConnectable}
         className="w-3 h-3 !bg-purple-500"
       />
+        <Handle
+            type="source"
+            position={Position.Right}
+            id="output"
+            isConnectable={isConnectable}
+            className="w-3 h-3 !bg-purple-500"
+        />
     </div>
   )
 }

@@ -31,6 +31,14 @@ export const getNodeDataFlow = (nodeId: string, nodeType: string, edges: Edge[],
         inputType = 'product_details'
         inputDescription = 'Product details with title, description, etc.'
         break
+      case 'loop':
+        inputType = 'single_asin_from_loop'
+        inputDescription = 'A single item from the loop'
+        break
+      case 'merge':
+        inputType = 'product_details_table'
+        inputDescription = 'A table of product details'
+        break
     }
   }
 
@@ -51,6 +59,14 @@ export const getNodeDataFlow = (nodeId: string, nodeType: string, edges: Edge[],
       outputType = 'product_details'
       outputDescription = 'Complete product information'
       break
+    case 'loop':
+      outputType = 'single_asin_from_loop'
+      outputDescription = 'Single item to be processed individually'
+      break
+    case 'merge':
+      outputType = 'product_details_table'
+      outputDescription = 'A table of all collected product details'
+      break
     default:
       outputType = 'unknown'
       outputDescription = 'Unknown output type'
@@ -67,9 +83,11 @@ export const getNodeDataFlow = (nodeId: string, nodeType: string, edges: Edge[],
 
 export const isValidConnection = (sourceNodeType: string, targetNodeType: string): boolean => {
   const validConnections: Record<string, string[]> = {
-    'get_bestselling_asins': ['get_asin_by_index'],
+    'get_bestselling_asins': ['get_asin_by_index', 'loop', 'get_asin_details'],
     'get_asin_by_index': ['get_asin_details'],
-    'get_asin_details': []  // Terminal node
+    'get_asin_details': ['merge'], // Can now lead to a merge
+    'loop': ['get_asin_details'], // Loop can start processing with a single-item node
+    'merge': [], // Merge is a terminal node for now
   }
 
   const validTargets = validConnections[sourceNodeType]

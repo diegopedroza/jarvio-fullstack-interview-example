@@ -1,6 +1,6 @@
 import React from 'react'
 import { CheckCircle, XCircle, Clock } from 'lucide-react'
-import type { WorkflowRun } from '@/types'
+import type { WorkflowRun, WorkflowResult } from '@/types'
 
 interface WorkflowResultsProps {
   runs: WorkflowRun[]
@@ -20,53 +20,98 @@ export const WorkflowResults: React.FC<WorkflowResultsProps> = ({ runs }) => {
     }
   }
 
-  const formatResults = (results: Record<string, any>) => {
+  const formatResults = (results: Record<string, WorkflowResult>) => {
     if (!results) return null
 
-    return Object.entries(results).map(([nodeId, result]) => (
-      <div key={nodeId} className="mb-4">
-        <h4 className="font-semibold text-gray-700 mb-2">{nodeId}</h4>
-        <div className="bg-gray-50 p-3 rounded text-sm">
-          <div className="mb-1">
-            <span className="font-medium">Type:</span> {result.type}
-          </div>
-          {result.type === 'asin_list' && (
-            <div>
-              <span className="font-medium">ASINs ({result.count}):</span>
-              <ul className="list-disc list-inside mt-1">
-                {result.value.map((asin: string, index: number) => (
-                  <li key={index} className="text-xs">{asin}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {result.type === 'single_asin' && (
-            <div>
-              <span className="font-medium">ASIN:</span> {result.value}
-            </div>
-          )}
-          {result.type === 'product_details' && (
-            <div>
-              <div><span className="font-medium">ASIN:</span> {result.value.asin}</div>
-              <div><span className="font-medium">Title:</span> {result.value.title}</div>
-              {result.value.description && (
-                <div><span className="font-medium">Description:</span> {result.value.description}</div>
-              )}
-              {result.value.bullet_points && (
-                <div>
-                  <span className="font-medium">Bullet Points:</span>
-                  <ul className="list-disc list-inside mt-1">
-                    {result.value.bullet_points.map((point: string, index: number) => (
-                      <li key={index} className="text-xs">{point}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
+  return Object.entries(results)
+    .filter(([, result]) => result.type !== 'loop_items') // Hide internal loop results
+    .map(([nodeId, result]) => (
+    <div key={nodeId} className="mb-4">
+      <h4 className="font-semibold text-gray-700 mb-2">{nodeId}</h4>
+      <div className="bg-gray-50 p-3 rounded text-sm">
+        <div className="mb-1">
+          <span className="font-medium">Type:</span> {result.type}
         </div>
+        {result.type === 'asin_list' && (
+          <div>
+            <span className="font-medium">ASINs ({result.count}):</span>
+            <ul className="list-disc list-inside mt-1">
+              {result.value.map((asin: string, index: number) => (
+                <li key={index} className="text-xs">{asin}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {result.type === 'single_asin' && (
+          <div>
+            <span className="font-medium">ASIN:</span> {result.value}
+          </div>
+        )}
+        {result.type === 'product_details' && (
+          (() => {
+            // The backend returns the product inside an object keyed by its ASIN.
+            // We need to extract the first product from the `value` object.
+            const product = result.value && typeof result.value === 'object' 
+              ? Object.values(result.value)[0] 
+              : null;
+
+            if (!product) return <div>No product details found.</div>;
+
+            return (
+              <div>
+                <div><span className="font-medium">ASIN:</span> {product.asin}</div>
+                <div><span className="font-medium">Title:</span> {product.title}</div>
+                {product.description && (
+                  <div><span className="font-medium">Description:</span> {product.description}</div>
+                )}
+                {product.bullet_points && (
+                  <div>
+                    <span className="font-medium">Bullet Points:</span>
+                    <ul className="list-disc list-inside mt-1">
+                      {product.bullet_points.map((point: string, index: number) => (
+                        <li key={index} className="text-xs">{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()
+        )}
+        {result.type === 'product_details_table' && (
+            <div className="overflow-x-auto">
+              <span className="font-medium">Products ({result.count}):</span>
+              <table className="min-w-full divide-y divide-gray-200 mt-2">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th scope="col" className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ASIN</th>
+                    <th scope="col" className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Title</th>
+                    <th scope="col" className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Description</th>
+                    <th scope="col" className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Bullet Points</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {result.value.map((product) => (
+                    <tr key={product.asin}>
+                      <td className="px-4 py-2 whitespace-nowrap text-xs font-mono">{product.asin}</td>
+                      <td className="px-4 py-2 whitespace-normal text-xs">{product.title}</td>
+                      <td className="px-4 py-2 whitespace-normal text-xs">{product.description || 'N/A'}</td>
+                      <td className="px-4 py-2 text-xs">
+                        {product.bullet_points && product.bullet_points.length > 0 ? (
+                          <ul className="list-disc list-inside">
+                            {product.bullet_points.map((point, i) => <li key={i}>{point}</li>)}
+                          </ul>
+                        ) : 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+        )}
       </div>
-    ))
+    </div>
+  ))
   }
 
   if (runs.length === 0) {

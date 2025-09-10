@@ -20,6 +20,8 @@
       <change afterPath="$PROJECT_DIR$/src/components/workflow/nodes/GetAsinByIndexNode.tsx" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/components/workflow/nodes/GetAsinDetailsNode.tsx" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/components/workflow/nodes/GetBestSellingAsinsNode.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/workflow/nodes/LoopNode.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/workflow/nodes/MergeNode.tsx" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/hooks/useProducts.ts" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/hooks/useWorkflows.ts" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/index.css" afterDir="false" />
@@ -38,7 +40,11 @@
       <change afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/tsconfig.node.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/vite.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/routers/workflows.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/routers/workflows.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/workflow_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/workflow_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tsconfig.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,19 +54,24 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="32T0ujgIBDb3cO7UpfJe0I65nW9" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "JavaScript Debug.main.executor": "Run",
+    "Docker....frontend: Compose Deployment.executor": "Run",
+    "JavaScript Debug.main.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "master",
     "node.js.detected.package.eslint": "true",
@@ -72,11 +83,33 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="JavaScript Debug.main">
     <configuration name="main" type="JavascriptDebugType" uri="http://localhost:3000">
       <mapping url="http://localhost:3000" local-file="$PROJECT_DIR$/src" />
       <method v="2" />
     </configuration>
+    <configuration name="...frontend: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="frontend" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="../docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker....frontend: Compose Deployment" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -93,6 +126,7 @@
       <option name="presentableId" value="Default" />
       <updated>1757429480202</updated>
       <workItem from="1757429481264" duration="2140000" />
+      <workItem from="1757435681798" duration="26631000" />
     </task>
     <servers />
   </component>

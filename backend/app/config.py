@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     database_url: str = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/workflow_builder")
     jwt_secret: str = os.getenv("JWT_SECRET", "dev-secret-key-change-in-production")
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
+    jwt_access_token_expire_minutes: int = 2880  # TODO: get from env
     
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     
